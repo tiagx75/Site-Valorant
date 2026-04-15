@@ -1,14 +1,4 @@
-"""
-Valorant Hub — Skins, Agents & Tier Lists
-Serveur local Python qui sert le site sur http://localhost:8000
-Lancer avec : python valorant_hub.py
-"""
-
-import http.server
-import webbrowser
-import threading
-
-HTML = r"""<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
@@ -88,6 +78,19 @@ HTML = r"""<!DOCTYPE html>
     .skin-badge{display:inline-flex;align-items:center;font-size:9px;padding:2px 7px;border-radius:10px;font-weight:600}
     .skin-ch{font-size:9px;color:var(--txt3)}
 
+    /* VP badge */
+    .vp-badge{display:inline-flex;align-items:center;gap:3px;font-size:9px;font-weight:700;color:#0bc4b0;background:#0bc4b015;border:1px solid #0bc4b030;border-radius:10px;padding:2px 7px}
+
+    /* Lightbox */
+    .lb-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:9999;align-items:center;justify-content:center;flex-direction:column;gap:16px;padding:20px}
+    .lb-overlay.open{display:flex}
+    .lb-img{max-width:min(600px,90vw);max-height:65vh;object-fit:contain;border-radius:12px;box-shadow:0 8px 40px rgba(0,0,0,.6)}
+    .lb-info{text-align:center}
+    .lb-name{color:#fff;font-size:16px;font-weight:700;margin-bottom:6px}
+    .lb-meta{display:flex;align-items:center;justify-content:center;gap:10px}
+    .lb-close{position:absolute;top:16px;right:20px;background:rgba(255,255,255,.12);border:none;color:#fff;font-size:20px;cursor:pointer;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:background .15s}
+    .lb-close:hover{background:rgba(255,255,255,.25)}
+
     /* ══════════ AGENTS ══════════ */
     .role-row{display:flex;gap:7px;margin-bottom:1rem;flex-wrap:wrap}
     .role-chip{padding:5px 14px;border-radius:20px;font-size:11px;font-weight:700;cursor:pointer;border:1px solid var(--bdr2);background:var(--bg);color:var(--txt2);transition:all .15s;display:flex;align-items:center;gap:5px}
@@ -151,6 +154,20 @@ HTML = r"""<!DOCTYPE html>
     .tier-C .tier-label{background:#4a9e4a;color:#fff}
     .tier-D .tier-label{background:#5a5a6e;color:#fff}
     .tier-agents{flex:1;display:flex;flex-wrap:wrap;gap:8px;padding:10px 12px;align-items:center;background:var(--bg2)}
+
+    /* ══ COMPOS SECTION ══ */
+    .compos-section{padding:14px 16px;display:flex;flex-direction:column;gap:14px}
+    .comp-block{border:1px solid var(--bdr);border-radius:var(--rmd);overflow:hidden}
+    .comp-header{display:flex;align-items:center;gap:8px;padding:9px 14px;background:var(--bg2);border-bottom:1px solid var(--bdr);flex-wrap:wrap}
+    .comp-num{font-size:9px;font-weight:800;letter-spacing:1px;color:var(--red);text-transform:uppercase}
+    .comp-label{font-size:12px;font-weight:700;color:var(--txt);flex:1}
+    .comp-badge{font-size:10px;font-weight:700;background:var(--dark);color:#fff;padding:2px 9px;border-radius:10px;white-space:nowrap}
+    .comp-agents{display:flex;flex-wrap:wrap;gap:7px;padding:11px 14px;background:var(--bg);border-bottom:1px solid var(--bdr)}
+    .comp-strats{padding:11px 14px;display:flex;flex-direction:column;gap:7px;background:var(--bg)}
+    .strat-item{font-size:11px;color:var(--txt2);line-height:1.6;padding:7px 10px;border-radius:6px;background:var(--bg2);border-left:3px solid var(--bdr2)}
+    .strat-item:nth-child(1){border-left-color:#5c85d6}
+    .strat-item:nth-child(2){border-left-color:#5c85d6}
+    .strat-item:nth-child(3){border-left-color:#ff4655}
 
     .agent-pill{display:flex;align-items:center;gap:6px;background:var(--bg);border:1px solid var(--bdr);border-radius:20px;padding:4px 10px 4px 4px;transition:border-color .15s}
     .agent-pill:hover{border-color:var(--red)}
@@ -233,20 +250,33 @@ HTML = r"""<!DOCTYPE html>
 
 <!-- ═════════════ TIER LIST ═════════════ -->
 <div id="page-tierlist" class="page">
-  <p class="page-title" style="margin-top:.5rem">Tier List — Meilleurs agents par map</p>
-  <p class="page-sub">Map pool V26 · Act 2 · Ranked Compétitif — basé sur le meta pro & solo queue actuel</p>
+  <p class="page-title" style="margin-top:.5rem">Compos & Stratégies — Map Pool Actuel</p>
+  <p class="page-sub">Patch 12.05 · Fracture & Lotus de retour · 3 compos VCT par map + stratégies clés</p>
 
   <div class="tl-intro">
     <div>
-      <div class="tl-badge">V26 ACT 2 — OFFICIEL</div>
+      <div class="tl-badge">PATCH 12.05 — MAP POOL OFFICIEL</div>
       <div style="margin-top:6px" class="tl-intro-text">
-        Map pool actuel : <strong>Bind · Lotus · Split · Fracture · Pearl · Haven · Breeze</strong><br>
-        Abyss & Corrode sont OUT. Fracture & Lotus font leur retour. Les tier lists couvrent <strong>Duéliste, Controller, Initiateur & Sentinelle</strong>.
+        Map pool actuel : <strong>Bind · Breeze · Haven · Lotus · Pearl · Split · Fracture</strong><br>
+        Abyss &amp; Corrode sont OUT. Fracture &amp; Lotus font leur retour. Chaque map présente <strong>3 compos utilisées en VCT</strong> avec les stratégies associées.
       </div>
     </div>
   </div>
 
   <div class="maps-grid" id="mapsGrid"></div>
+</div>
+
+<!-- Lightbox -->
+<div class="lb-overlay" id="lbOverlay" onclick="closeLightbox(event)">
+  <button class="lb-close" onclick="closeLightboxBtn()">✕</button>
+  <img class="lb-img" id="lbImg" src="" alt="">
+  <div class="lb-info">
+    <div class="lb-name" id="lbName"></div>
+    <div class="lb-meta">
+      <span class="skin-badge" id="lbRarity"></span>
+      <span class="vp-badge" id="lbVp"></span>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -274,6 +304,7 @@ const TIER_MAP={
 };
 const RARITY_COLORS={Standard:'#888',Select:'#5c85d6',Deluxe:'#4CAF50',Premium:'#b44dff',Exclusive:'#ff9800',Ultra:'#f5c518',Edition:'#ff4655'};
 const RARITY_ORDER=['Standard','Select','Deluxe','Premium','Exclusive','Ultra','Edition'];
+const RARITY_VP={Standard:875,Select:875,Deluxe:1275,Premium:1775,Exclusive:2175,Ultra:2675,Edition:2475};
 
 let allWeapons=[];
 let openWeapons=new Set();
@@ -319,13 +350,19 @@ function applySkinsFilters(){
     const meta=w.weaponStats?[w.weaponStats.fireRate?w.weaponStats.fireRate+' coups/s':null,w.weaponStats.magazineSize?w.weaponStats.magazineSize+' balles':null].filter(Boolean).join(' · '):'';
     const groupsH=og.map(([rar,ss])=>{
       const c=RARITY_COLORS[rar]||'#888';
+      const vp=RARITY_VP[rar]||'—';
       const cards=ss.map(sk=>{
         const img=sk.displayIcon||(sk.levels&&sk.levels[0]&&sk.levels[0].displayIcon)||'';
         const ch=sk.chromas?sk.chromas.length:0;
-        return `<div class="skin-card">
+        const imgEsc=(img||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+        const nameEsc=(sk.displayName||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+        return `<div class="skin-card" onclick="openLightbox('${imgEsc}','${nameEsc}','${c}','${rar}','${vp}')" style="cursor:pointer">
           <div class="skin-img-wrap">${img?`<img class="skin-img" src="${img}" alt="${sk.displayName}" loading="lazy" onerror="this.parentElement.innerHTML='<div class=\\'skin-img-ph\\'>—</div>'">`:'<div class="skin-img-ph">—</div>'}</div>
           <div class="skin-name">${sk.displayName}</div>
-          <div class="skin-badge" style="background:${c}22;color:${c}">${rar}</div>
+          <div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap">
+            <div class="skin-badge" style="background:${c}22;color:${c}">${rar}</div>
+            <div class="vp-badge">◆ ${vp} VP</div>
+          </div>
           ${ch>1?`<div class="skin-ch">${ch} variantes</div>`:''}
         </div>`;}).join('');
       return `<div><div class="rar-header"><div class="rar-dot" style="background:${c}"></div><span class="rar-name">${rar}</span><span class="rar-count">${ss.length} skin${ss.length>1?'s':''}</span></div><div class="skins-grid">${cards}</div></div>`;
@@ -438,100 +475,331 @@ function toggleAgent(uuid){
 }
 
 /* ─────────────────────────────
-   TIER LIST — V26 ACT 2
-   Sources : meta pro + win rate ranked
+   COMPOS VCT — PATCH 12.05
+   Sources : VCT Masters 2025/2026 + hotspawn + esportsinsider + vlr.gg
 ───────────────────────────── */
 const MAP_DATA=[
   {
     name:'Bind',sites:'2 sites · Téléporteurs',
     color:'#c84b00',
     uuid:'2c9d57ec-4431-9c5e-2939-8f9ef6dd5cba',
-    tip:'<strong>Bind</strong> est une map avec téléporteurs qui favorise les agents capables de faire des rotations rapides et de contrôler les entrées de site. Raze est quasi obligatoire grâce à ses satchels dans les couloirs étroits. Viper est la meilleure smoker car son écran découpe B site et la teleroom. Skye et Breach sont les meilleurs initiateurs pour les flashes dans les couloirs. Brimstone pour ses smokes précises sur A short.',
-    tiers:{
-      S:[{n:'Raze',r:'Dueliste'},{n:'Viper',r:'Controller'},{n:'Skye',r:'Initiateur'},{n:'Killjoy',r:'Sentinelle'}],
-      A:[{n:'Breach',r:'Initiateur'},{n:'Brimstone',r:'Controller'},{n:'Cypher',r:'Sentinelle'},{n:'Tejo',r:'Initiateur'}],
-      B:[{n:'Omen',r:'Controller'},{n:'Gekko',r:'Initiateur'},{n:'Neon',r:'Dueliste'},{n:'Sova',r:'Initiateur'}],
-      C:[{n:'Jett',r:'Dueliste'},{n:'Reyna',r:'Dueliste'},{n:'Chamber',r:'Sentinelle'},{n:'Clove',r:'Controller'}],
-      D:[{n:'Astra',r:'Controller'},{n:'Harbor',r:'Controller'},{n:'Deadlock',r:'Sentinelle'},{n:'Iso',r:'Dueliste'}],
-    }
+    compos:[
+      {
+        label:'Double Controller (Meta Pro)',
+        badge:'🏆 VCT Dominant',
+        agents:[
+          {n:'Raze',r:'Dueliste'},{n:'Viper',r:'Controller'},{n:'Brimstone',r:'Controller'},
+          {n:'Skye',r:'Initiateur'},{n:'Cypher',r:'Sentinelle'}
+        ],
+        strats:[
+          '🔵 ATK — Execute B via Teleroom : Viper wall coupe B site en deux, Brimstone fume B short, Skye flash devant, Raze entre en premier avec Satchel.',
+          '🔵 ATK — A Exec rapide : Brimstone fume A short + lamps simultanément, Skye Trailblazer dans A site, Raze grenade sur Truck pour clear.',
+          '🔴 DEF — Retake B : Cypher cam sur B site, Viper ult si plant, Raze Satchel depuis Teleroom pour retake express. Ne pas tourner trop tôt.',
+        ]
+      },
+      {
+        label:'Agressif Double Initiateur',
+        badge:'⚡ High Pace',
+        agents:[
+          {n:'Raze',r:'Dueliste'},{n:'Viper',r:'Controller'},{n:'Fade',r:'Initiateur'},
+          {n:'Tejo',r:'Initiateur'},{n:'Killjoy',r:'Sentinelle'}
+        ],
+        strats:[
+          '🔵 ATK — Mid control : Fade Haunt sur A Short pour forcer les rotations, Tejo Stealth Drone scout B, puis Raze entre sur le site isolé.',
+          '🔵 ATK — B Rush coordonné : Fade seize sur Hookah + Tejo grenade sur B main, Raze double Satchel pour entrer avant que l\'ennemi reprenne position.',
+          '🔴 DEF — Information dominante : Fade Haunt mid + Tejo cam Hookah = rotation parfaite. Killjoy Nanoswarm sur B plant zone pour punir les post-plants.',
+        ]
+      },
+      {
+        label:'Sentinel Stack (Ranked)',
+        badge:'🛡️ Défense Solide',
+        agents:[
+          {n:'Raze',r:'Dueliste'},{n:'Brimstone',r:'Controller'},{n:'Skye',r:'Initiateur'},
+          {n:'Cypher',r:'Sentinelle'},{n:'Killjoy',r:'Sentinelle'}
+        ],
+        strats:[
+          '🔴 DEF — Lockdown A : Killjoy Alarmbot + Turret sur A site, Cypher cam + tripwire A short. Défense quasi gratuite avec 2 sentinelles.',
+          '🔵 ATK — Utiliser les téléporteurs : Raze grenade dans le téléporteur A→B pour surprendre les défenseurs. Skye flash en avance pour prendre Hookah.',
+          '🔵 ATK — Split map : Cypher trip sur B pour watch flank, le reste push A en force avec Brimstone smokes + Skye flash simultanée.',
+        ]
+      }
+    ]
   },
   {
-    name:'Lotus',sites:'3 sites · Portes rotatives',
-    color:'#2d7a3a',
-    uuid:'2fb9a4fd-47b8-4e7f-a969-9b65a51a988a',
-    tip:'<strong>Lotus</strong> est la map à 3 sites avec portes rotatives. Elle nécessite un Controller puissant pour contrôler les flancs et les portes. Viper + Omen est le double smoke dominant car ils couvrent les 3 sites indépendamment. Raze est indispensable pour ouvrir les sites rapidement. Killjoy verrouille C site avec sa Lockdown. Fade & Tejo apportent l\'info sur les rotations adverses.',
-    tiers:{
-      S:[{n:'Raze',r:'Dueliste'},{n:'Viper',r:'Controller'},{n:'Killjoy',r:'Sentinelle'},{n:'Fade',r:'Initiateur'}],
-      A:[{n:'Omen',r:'Controller'},{n:'Tejo',r:'Initiateur'},{n:'Skye',r:'Initiateur'},{n:'Jett',r:'Dueliste'}],
-      B:[{n:'Gekko',r:'Initiateur'},{n:'Clove',r:'Controller'},{n:'Vyse',r:'Sentinelle'},{n:'Breach',r:'Initiateur'}],
-      C:[{n:'Brimstone',r:'Controller'},{n:'Cypher',r:'Sentinelle'},{n:'Neon',r:'Dueliste'},{n:'KAY/O',r:'Initiateur'}],
-      D:[{n:'Reyna',r:'Dueliste'},{n:'Phoenix',r:'Dueliste'},{n:'Harbor',r:'Controller'},{n:'Deadlock',r:'Sentinelle'}],
-    }
-  },
-  {
-    name:'Split',sites:'2 sites · Verticale',
-    color:'#1a5fa8',
-    uuid:'d960549e-485c-e861-8d71-aa9d1aed12a2',
-    tip:'<strong>Split</strong> est une map verticale avec des couloirs très étroits. Raze domine grâce à ses satchels sur les boosts. Omen contrôle Mid et Heaven via ses smokes. Sage est incontournable pour son mur sur B ou A ramp. Breach est parfait pour ses stuns sur les couloirs étroits. Cypher peut tenir les flancs Heaven et Mid en solo.',
-    tiers:{
-      S:[{n:'Raze',r:'Dueliste'},{n:'Omen',r:'Controller'},{n:'Sage',r:'Sentinelle'},{n:'Breach',r:'Initiateur'}],
-      A:[{n:'Cypher',r:'Sentinelle'},{n:'Skye',r:'Initiateur'},{n:'Viper',r:'Controller'},{n:'Tejo',r:'Initiateur'}],
-      B:[{n:'Jett',r:'Dueliste'},{n:'Killjoy',r:'Sentinelle'},{n:'Waylay',r:'Dueliste'},{n:'Clove',r:'Controller'}],
-      C:[{n:'KAY/O',r:'Initiateur'},{n:'Neon',r:'Dueliste'},{n:'Brimstone',r:'Controller'},{n:'Gekko',r:'Initiateur'}],
-      D:[{n:'Reyna',r:'Dueliste'},{n:'Astra',r:'Controller'},{n:'Harbor',r:'Controller'},{n:'Phoenix',r:'Dueliste'}],
-    }
-  },
-  {
-    name:'Fracture',sites:'2 sites · Ziplines',
-    color:'#8b1a1a',
-    uuid:'b529448b-4d60-346e-e89e-00a4c527a405',
-    tip:'<strong>Fracture</strong> est la map la plus unique du pool avec ses ziplines. Les attaquants peuvent pincer depuis les deux côtés. Breach est quasi obligatoire — ses stuns couvrent les deux entrées A et B simultanément. Brimstone place ses smokes depuis n\'importe quel angle. Fade et Raze complètent la comp idéale. Chamber est le meilleur sentinel pour tenir les angles longs sur ce map.',
-    tiers:{
-      S:[{n:'Breach',r:'Initiateur'},{n:'Raze',r:'Dueliste'},{n:'Brimstone',r:'Controller'},{n:'Fade',r:'Initiateur'}],
-      A:[{n:'Chamber',r:'Sentinelle'},{n:'Killjoy',r:'Sentinelle'},{n:'Omen',r:'Controller'},{n:'Tejo',r:'Initiateur'}],
-      B:[{n:'Jett',r:'Dueliste'},{n:'Viper',r:'Controller'},{n:'Skye',r:'Initiateur'},{n:'Cypher',r:'Sentinelle'}],
-      C:[{n:'KAY/O',r:'Initiateur'},{n:'Neon',r:'Dueliste'},{n:'Clove',r:'Controller'},{n:'Gekko',r:'Initiateur'}],
-      D:[{n:'Sage',r:'Sentinelle'},{n:'Reyna',r:'Dueliste'},{n:'Harbor',r:'Controller'},{n:'Deadlock',r:'Sentinelle'}],
-    }
-  },
-  {
-    name:'Pearl',sites:'2 sites · Mid ouvert',
-    color:'#4a3080',
-    uuid:'fd267378-4d1d-484f-ff52-77821ed10dc2',
-    tip:'<strong>Pearl</strong> récompense le contrôle du mid et l\'information. C\'est une map où les initiateurs valent de l\'or. Fade est le meilleur initiateur pour ses révélations dans les couloirs. Astra et Viper contrôlent le mid et les 2 sites depuis leurs positions sûres. Killjoy et Cypher verrouillent B Short. Chamber est excellent sur les angles longs de A Main.',
-    tiers:{
-      S:[{n:'Fade',r:'Initiateur'},{n:'Viper',r:'Controller'},{n:'Killjoy',r:'Sentinelle'},{n:'Chamber',r:'Sentinelle'}],
-      A:[{n:'Astra',r:'Controller'},{n:'Cypher',r:'Sentinelle'},{n:'Tejo',r:'Initiateur'},{n:'Jett',r:'Dueliste'}],
-      B:[{n:'Sova',r:'Initiateur'},{n:'Omen',r:'Controller'},{n:'KAY/O',r:'Initiateur'},{n:'Raze',r:'Dueliste'}],
-      C:[{n:'Gekko',r:'Initiateur'},{n:'Skye',r:'Initiateur'},{n:'Clove',r:'Controller'},{n:'Neon',r:'Dueliste'}],
-      D:[{n:'Sage',r:'Sentinelle'},{n:'Phoenix',r:'Dueliste'},{n:'Harbor',r:'Controller'},{n:'Reyna',r:'Dueliste'}],
-    }
+    name:'Breeze',sites:'2 sites · Longue portée',
+    color:'#0a6e8a',
+    uuid:'2c9d57ec-4431-9c5e-2939-8f9ef6dd5cba',
+    compos:[
+      {
+        label:'OP Dominance (VCT Standard)',
+        badge:'🏆 VCT Dominant',
+        agents:[
+          {n:'Jett',r:'Dueliste'},{n:'Viper',r:'Controller'},{n:'Sova',r:'Initiateur'},
+          {n:'KAY/O',r:'Initiateur'},{n:'Chamber',r:'Sentinelle'}
+        ],
+        strats:[
+          '🔵 ATK — A execute : Viper wall coupe mid, Sova Recon Bolt révèle A site, KAY/O grenade supprime les utilitaires défensifs, Jett OP entre en première ligne.',
+          '🔵 ATK — B Slow push : Sova Drone scout B hall, Viper molly sur B main pour forcer recul, Chamber OP tient les angles de B long pendant l\'exécution.',
+          '🔴 DEF — KAY/O flash mid : KAY/O flash sur mid doors pour contester le contrôle, Jett OP angle depuis A hall, Viper wall coupe les rotations B→A.',
+        ]
+      },
+      {
+        label:'Double Controller',
+        badge:'🎯 Contrôle Map',
+        agents:[
+          {n:'Neon',r:'Dueliste'},{n:'Viper',r:'Controller'},{n:'Astra',r:'Controller'},
+          {n:'Sova',r:'Initiateur'},{n:'Chamber',r:'Sentinelle'}
+        ],
+        strats:[
+          '🔵 ATK — Mid control : Astra star sur mid pour gravity well si ennemi avance, Viper wall sur A hall, Neon speed rush B pendant que le mid est verrouillé.',
+          '🔵 ATK — A full execute : Astra smoke A main + A lobby, Viper orb devant A site, Sova shock darts post-plant. Neon entre en premier avec sa vitesse.',
+          '🔴 DEF — Double smoke stall : Viper wall + Astra smoke créent une zone aveugle totale pour B. Chamber Rendezvous permet de jouer agressif puis de fuir.',
+        ]
+      },
+      {
+        label:'Solo Initiateur Yoru-Style',
+        badge:'⚡ Tilt Enemy',
+        agents:[
+          {n:'Jett',r:'Dueliste'},{n:'Viper',r:'Controller'},{n:'Sova',r:'Initiateur'},
+          {n:'Yoru',r:'Dueliste'},{n:'Cypher',r:'Sentinelle'}
+        ],
+        strats:[
+          '🔵 ATK — Fake A, execute B : Yoru téléporte decoy sur A, toute l\'équipe rush B hall. Sova Recon bolt révèle B site pendant que la défense rotate A.',
+          '🔵 ATK — Yoru ult split : Pendant Yoru ult, le reste de l\'équipe push B main avec Viper wall. Impossible à défendre à 2 endroits simultanément.',
+          '🔴 DEF — Cypher cam mid : Cypher cam permanente sur mid doors, Sova Recon bolt côté B pour info. Jett OP angle permet les early picks sur les agresseurs.',
+        ]
+      }
+    ]
   },
   {
     name:'Haven',sites:'3 sites · Grand format',
     color:'#1e6b5a',
     uuid:'2bee0dc9-4ffe-519b-1cbd-7825db7f6a55',
-    tip:'<strong>Haven</strong> est la seule map avec 3 sites. Elle exige une excellente communication et des agents capables de contrôler plusieurs angles. Sova est le meilleur initiateur — ses recons couvrent A, C et Mid sans se mettre en danger. Omen et Brimstone dominent pour les smokes. Killjoy peut anchor un site en solo. Jett reste redoutable sur les angles C Long et A Long.',
-    tiers:{
-      S:[{n:'Sova',r:'Initiateur'},{n:'Jett',r:'Dueliste'},{n:'Killjoy',r:'Sentinelle'},{n:'Omen',r:'Controller'}],
-      A:[{n:'Brimstone',r:'Controller'},{n:'Skye',r:'Initiateur'},{n:'Breach',r:'Initiateur'},{n:'Cypher',r:'Sentinelle'}],
-      B:[{n:'Fade',r:'Initiateur'},{n:'Tejo',r:'Initiateur'},{n:'Chamber',r:'Sentinelle'},{n:'Clove',r:'Controller'}],
-      C:[{n:'Raze',r:'Dueliste'},{n:'KAY/O',r:'Initiateur'},{n:'Viper',r:'Controller'},{n:'Gekko',r:'Initiateur'}],
-      D:[{n:'Neon',r:'Dueliste'},{n:'Astra',r:'Controller'},{n:'Harbor',r:'Controller'},{n:'Deadlock',r:'Sentinelle'}],
-    }
+    compos:[
+      {
+        label:'Double Duelliste Explosif',
+        badge:'🏆 VCT 2026 Meta',
+        agents:[
+          {n:'Neon',r:'Dueliste'},{n:'Iso',r:'Dueliste'},{n:'Sova',r:'Initiateur'},
+          {n:'Omen',r:'Controller'},{n:'Killjoy',r:'Sentinelle'}
+        ],
+        strats:[
+          '🔵 ATK — A site blitz : Omen smoke A long + A lobby simultanément depuis spawn, Sova Recon A site, Neon rush avec vitesse + Iso wall pour entrer proprement.',
+          '🔵 ATK — C hit rapide : Omen smoke C long + C site, Iso ult isole un défenseur, Neon entre en deuxième avec vitesse. Killjoy watch flanc B pendant l\'exécution.',
+          '🔴 DEF — Iso flanc garage : Iso joue garage en solo pour les early picks, Killjoy Turret + Alarmbot en B pour watch sans risque. Sova Recon mid à chaque round.',
+        ]
+      },
+      {
+        label:'Sova Slow Control (VCT Classic)',
+        badge:'🎯 Pro Standard',
+        agents:[
+          {n:'Jett',r:'Dueliste'},{n:'Sova',r:'Initiateur'},{n:'Skye',r:'Initiateur'},
+          {n:'Omen',r:'Controller'},{n:'Cypher',r:'Sentinelle'}
+        ],
+        strats:[
+          '🔵 ATK — Info first : Sova Recon bolt A ou C chaque round avant d\'engager, Skye Trailblazer mid pour scout. Cypher trip watch B pendant le push.',
+          '🔵 ATK — C exécution : Omen smoke C long + C site entry, Skye flash corner garage, Jett OP push depuis le smoke. Sova post-plant shock darts sur plant zone.',
+          '🔴 DEF — Sova Recon rotation : Sova Recon mid toutes les 30 secondes pour forcer la rotation adversaire. Cypher cam C long pour watch l\'agression A.',
+        ]
+      },
+      {
+        label:'Viper Double Smoke Défensif',
+        badge:'🛡️ Retake Setup',
+        agents:[
+          {n:'Jett',r:'Dueliste'},{n:'Fade',r:'Initiateur'},{n:'Omen',r:'Controller'},
+          {n:'Viper',r:'Controller'},{n:'Killjoy',r:'Sentinelle'}
+        ],
+        strats:[
+          '🔴 DEF — Viper ult retake : Si spike planté, Viper ult sur A site = retake presque gratuit. Killjoy Lockdown pour forcer sorties avant que Viper entre.',
+          '🔵 ATK — Mid split : Omen smoke A + mid CT, Viper wall coupe C, Fade Haunt révèle C site. Jett flanc depuis mid pendant l\'execute principal en A.',
+          '🔴 DEF — Information Fade : Fade Haunt surveille C long et A long alternativement. Double smoke (Omen+Viper) permet de jouer très agressif sans prendre de risque.',
+        ]
+      }
+    ]
   },
   {
-    name:'Breeze',sites:'2 sites · Long range',
-    color:'#0a6e8a',
-    uuid:'2c9d57ec-4431-9c5e-2939-8f9ef6dd5cba',
-    tip:'<strong>Breeze</strong> est la map avec les plus longues portées de tir du pool. Les agents mobiles et les outils longue distance y brillent. Viper est quasi incontournable pour ses walls et mollies dans les espaces ouverts. Jett & Chamber dominent avec l\'Operator. Sova et Fade fournissent l\'information nécessaire sur les grandes distances. Harbor a aussi une utilité rare ici.',
-    tiers:{
-      S:[{n:'Viper',r:'Controller'},{n:'Jett',r:'Dueliste'},{n:'Sova',r:'Initiateur'},{n:'Chamber',r:'Sentinelle'}],
-      A:[{n:'Fade',r:'Initiateur'},{n:'Astra',r:'Controller'},{n:'Killjoy',r:'Sentinelle'},{n:'KAY/O',r:'Initiateur'}],
-      B:[{n:'Omen',r:'Controller'},{n:'Tejo',r:'Initiateur'},{n:'Cypher',r:'Sentinelle'},{n:'Clove',r:'Controller'}],
-      C:[{n:'Raze',r:'Dueliste'},{n:'Skye',r:'Initiateur'},{n:'Gekko',r:'Initiateur'},{n:'Harbor',r:'Controller'}],
-      D:[{n:'Sage',r:'Sentinelle'},{n:'Neon',r:'Dueliste'},{n:'Reyna',r:'Dueliste'},{n:'Phoenix',r:'Dueliste'}],
-    }
+    name:'Lotus',sites:'3 sites · Portes rotatives',
+    color:'#2d7a3a',
+    uuid:'2fb9a4fd-47b8-4e7f-a969-9b65a51a988a',
+    compos:[
+      {
+        label:'Double Controller Meta Pro',
+        badge:'🏆 VCT Dominant',
+        agents:[
+          {n:'Raze',r:'Dueliste'},{n:'Viper',r:'Controller'},{n:'Omen',r:'Controller'},
+          {n:'Fade',r:'Initiateur'},{n:'Killjoy',r:'Sentinelle'}
+        ],
+        strats:[
+          '🔵 ATK — A execute : Viper wall coupe A main + A tree, Omen smoke A site entry, Fade Haunt pour révéler. Raze grenade Rubble + Satchel pour entrer premier.',
+          '🔵 ATK — C fast execute : Omen smoke C main + C site, Viper orb C link, Fade Prowler dans C pour clear. Raze Satchel pour prendre hauteur rapidement.',
+          '🔴 DEF — Killjoy anchor C : Killjoy Lockdown sur C site permet à toute l\'équipe de jouer A+B. Viper wall sur B link ralentit les rotations adverses.',
+        ]
+      },
+      {
+        label:'Raze Fade Aggro',
+        badge:'⚡ Agression Pure',
+        agents:[
+          {n:'Raze',r:'Dueliste'},{n:'Jett',r:'Dueliste'},{n:'Fade',r:'Initiateur'},
+          {n:'Omen',r:'Controller'},{n:'Killjoy',r:'Sentinelle'}
+        ],
+        strats:[
+          '🔵 ATK — Double duelliste B : Fade Seize sur B main, Raze grenade + Jett dash pour entrer B en force. Omen smoke B site pendant que Killjoy watch A flank.',
+          '🔵 ATK — A Raze Satchel boost : Raze Satchel monte sur le rocher A Rubble pour angle inattendu. Fade Haunt révèle les defenses A pendant le boost.',
+          '🔴 DEF — Jett early aggro A long : Jett joue angle agressif A main avec OP, puis dash back si elle se rate. Fade Haunt watch B link pour info rotations.',
+        ]
+      },
+      {
+        label:'Gekko Utility Setup',
+        badge:'🌿 Ranked Climb',
+        agents:[
+          {n:'Raze',r:'Dueliste'},{n:'Viper',r:'Controller'},{n:'Gekko',r:'Initiateur'},
+          {n:'Fade',r:'Initiateur'},{n:'Killjoy',r:'Sentinelle'}
+        ],
+        strats:[
+          '🔵 ATK — Gekko Wingman plant : Gekko envoie Wingman planter la spike pendant que l\'équipe tient les angles. Idéal pour planter sans risque en B ou C.',
+          '🔵 ATK — Mosh Pit post-plant : Gekko Mosh Pit sur plant zone après la pose = impossible à désamorcer. Combine avec Viper ult pour site impossible à reprendre.',
+          '🔴 DEF — Dizzy flash + Fade : Gekko Dizzy flash devant les portes rotatives A, Fade Prowler scout dans les couloirs. Killjoy Lockdown si spike planté.',
+        ]
+      }
+    ]
+  },
+  {
+    name:'Pearl',sites:'2 sites · Mid ouvert',
+    color:'#4a3080',
+    uuid:'fd267378-4d1d-484f-ff52-77821ed10dc2',
+    compos:[
+      {
+        label:'Astra Mid Control (VCT Pro)',
+        badge:'🏆 VCT Standard',
+        agents:[
+          {n:'Jett',r:'Dueliste'},{n:'Astra',r:'Controller'},{n:'Viper',r:'Controller'},
+          {n:'Fade',r:'Initiateur'},{n:'Killjoy',r:'Sentinelle'}
+        ],
+        strats:[
+          '🔵 ATK — Mid control first : Astra star mid + gravity well si l\'ennemi avance, Viper wall B long pour couper vision. Fade Haunt révèle B site avant execute.',
+          '🔵 ATK — B execute : Astra smoke B site + B lobby, Viper orb B main, Fade Seize sur défenseur dans le site. Jett OP push depuis le smoke de B long.',
+          '🔴 DEF — Astra global smokes : Astra peut smoker A main depuis B spawn grâce à ses étoiles globales. Killjoy Nanoswarm B short pour punir les rushes rapides.',
+        ]
+      },
+      {
+        label:'Double Initiateur Info',
+        badge:'🎯 Information Win',
+        agents:[
+          {n:'Jett',r:'Dueliste'},{n:'Viper',r:'Controller'},{n:'Sova',r:'Initiateur'},
+          {n:'Fade',r:'Initiateur'},{n:'Killjoy',r:'Sentinelle'}
+        ],
+        strats:[
+          '🔵 ATK — Double info avant execute : Sova Recon Bolt B site + Fade Haunt A alternativement chaque round. Force la défense à réagir sans savoir où l\'attaque arrive.',
+          '🔵 ATK — A execute : Sova Recon révèle A site, Fade Prowler clear A main, Viper orb devant art. Jett dash dans le site une fois les défenseurs révélés.',
+          '🔴 DEF — Killjoy B anchor : Killjoy Turret + Alarmbot B site. Sova Recon mid à chaque round = info gratuite. Fade Haunt watch A main pour les rushes.',
+        ]
+      },
+      {
+        label:'Neon Speed Setup (Ranked Meta)',
+        badge:'⚡ Solo Queue',
+        agents:[
+          {n:'Neon',r:'Dueliste'},{n:'Astra',r:'Controller'},{n:'Fade',r:'Initiateur'},
+          {n:'KAY/O',r:'Initiateur'},{n:'Cypher',r:'Sentinelle'}
+        ],
+        strats:[
+          '🔵 ATK — KAY/O suppress + Neon rush : KAY/O grenade supprime les utilitaires défensifs sur B, Neon rush avec vitesse pendant la suppression. Astra smoke entrée.',
+          '🔵 ATK — A fake, B execute : Cypher trip A pour simuler une présence, toute l\'équipe rush B. KAY/O flash devant B lobby, Neon entre en premier.',
+          '🔴 DEF — Cypher cam mid : Cypher cam permanente sur mid doors = information gratuite. Astra star mid pour gravity well si aggression mid. Fade watch B long.',
+        ]
+      }
+    ]
+  },
+  {
+    name:'Split',sites:'2 sites · Verticale',
+    color:'#1a5fa8',
+    uuid:'d960549e-485c-e861-8d71-aa9d1aed12a2',
+    compos:[
+      {
+        label:'Raze Omen Sage (VCT Classique)',
+        badge:'🏆 VCT Standard',
+        agents:[
+          {n:'Raze',r:'Dueliste'},{n:'Omen',r:'Controller'},{n:'Viper',r:'Controller'},
+          {n:'Breach',r:'Initiateur'},{n:'Sage',r:'Sentinelle'}
+        ],
+        strats:[
+          '🔵 ATK — B execute : Omen smoke B heaven + B main, Breach Aftershock sur B site entry + flash, Raze Satchel boost sur B heaven. Sage wall bloque CT rotation.',
+          '🔵 ATK — A execute : Viper wall coupe mid + A heaven, Breach stun A ramp + flash, Raze grenade dans A site. Sage wall post-plant sur CT stairs.',
+          '🔴 DEF — Sage wall B ramp : Sage wall sur B ramp bloque toute l\'execute B pendant 20 secondes. Omen smoke heaven pour watch proprement, Breach lurk mid.',
+        ]
+      },
+      {
+        label:'Tejo Fade Double Info',
+        badge:'⚡ Patch 12 Meta',
+        agents:[
+          {n:'Raze',r:'Dueliste'},{n:'Omen',r:'Controller'},{n:'Fade',r:'Initiateur'},
+          {n:'Tejo',r:'Initiateur'},{n:'Cypher',r:'Sentinelle'}
+        ],
+        strats:[
+          '🔵 ATK — Information totale : Tejo Stealth Drone scout B ou A avant chaque execute. Fade Haunt révèle les angles restants. Raze entre avec les angles révélés.',
+          '🔵 ATK — Mid control : Omen smoke mid top + mid bottom, Tejo grenade mid pour forcer recul, Fade Seize sur un défenseur isolé en mid. Raze flanke par mid.',
+          '🔴 DEF — Cypher watch flank : Cypher cam mid + tripwire A flank. Fade Haunt permanente sur B main pour info early. Tejo Stealth Drone peut scouter l\'ennemi en attaque.',
+        ]
+      },
+      {
+        label:'Neon Boost Agressif',
+        badge:'🎯 High Elo Solo',
+        agents:[
+          {n:'Raze',r:'Dueliste'},{n:'Neon',r:'Dueliste'},{n:'Omen',r:'Controller'},
+          {n:'Breach',r:'Initiateur'},{n:'Killjoy',r:'Sentinelle'}
+        ],
+        strats:[
+          '🔵 ATK — Double duelliste B rush : Breach flash B heaven, Neon speed rush B main, Raze Satchel boost B heaven simultanément. Omen smoke CT + B site.',
+          '🔵 ATK — A split : Raze Satchel prend A heaven, Neon rush A main avec vitesse. Breach stun sur A lobby. Killjoy watch B flank depuis mid pendant l\'execute.',
+          '🔴 DEF — Killjoy lockdown B : Killjoy Lockdown B site force les attaquants à sortir ou mourir. Neon joue aggro en early pour pick mid. Breach stun B ramp si rush.',
+        ]
+      }
+    ]
+  },
+  {
+    name:'Fracture',sites:'2 sites · Ziplines',
+    color:'#8b1a1a',
+    uuid:'b529448b-4d60-346e-e89e-00a4c527a405',
+    compos:[
+      {
+        label:'Breach Brimstone Double Initiateur',
+        badge:'🏆 VCT Dominant',
+        agents:[
+          {n:'Raze',r:'Dueliste'},{n:'Brimstone',r:'Controller'},{n:'Breach',r:'Initiateur'},
+          {n:'Fade',r:'Initiateur'},{n:'Killjoy',r:'Sentinelle'}
+        ],
+        strats:[
+          '🔵 ATK — A pincer depuis deux côtés : Breach stun A arcade + A main simultanément, Brimstone smoke A site, Raze entre. Fade Haunt révèle les angles de A site.',
+          '🔵 ATK — B zipline rush : Raze Satchel + zipline pour entrer B door rapidement, Breach flash B main, Brimstone smoke B site. Fade Seize sur le défenseur B.',
+          '🔴 DEF — Killjoy anchor B : Killjoy Turret + Nanoswarm B site. Breach stun sur les deux entrées B simultanément si rush. Brimstone Ult post-plant = spike indefusable.',
+        ]
+      },
+      {
+        label:'KAY/O Suppress Setup',
+        badge:'⚡ Anti-Utility',
+        agents:[
+          {n:'Raze',r:'Dueliste'},{n:'Brimstone',r:'Controller'},{n:'KAY/O',r:'Initiateur'},
+          {n:'Breach',r:'Initiateur'},{n:'Cypher',r:'Sentinelle'}
+        ],
+        strats:[
+          '🔵 ATK — KAY/O ult execute : KAY/O ult au milieu du map, toute l\'équipe rush A ou B sans les utilitaires adverses actifs. Brimstone smoke rapide.',
+          '🔵 ATK — Suppress + rush B : KAY/O grenade sur B main supprime Killjoy ou Cypher, Breach flash suit, Raze grenade pour clear angles. Execute express.',
+          '🔴 DEF — Cypher watch flancs ziplines : Cypher tripwire sur les ziplines empêche les rushes express. KAY/O flash watch arcade A. Brimstone Ult réactif sur site planté.',
+        ]
+      },
+      {
+        label:'Chamber Viper Long Range',
+        badge:'🎯 Sniper Setup',
+        agents:[
+          {n:'Raze',r:'Dueliste'},{n:'Viper',r:'Controller'},{n:'Breach',r:'Initiateur'},
+          {n:'Fade',r:'Initiateur'},{n:'Chamber',r:'Sentinelle'}
+        ],
+        strats:[
+          '🔴 DEF — Chamber OP angles : Chamber tient les angles longs A main et B main avec l\'OP, puis Rendezvous pour fuir. Viper wall coupe les rotations milieu.',
+          '🔵 ATK — Viper wall split : Viper wall coupe B en deux, Breach stun B door, Raze entre B pendant que Chamber tient A avec OP en cas de rotate adverse.',
+          '🔴 DEF — Fade Haunt info : Fade Haunt permanente sur les ziplines pour watch les rushes express. Chamber Trademark sur A main = info + slow garantis.',
+        ]
+      }
+    ]
   },
 ];
 
@@ -547,30 +815,30 @@ async function buildTierList(){
   tlBuilt=true;
   allAgents.forEach(a=>{agentIconCache[a.displayName.toLowerCase()]={icon:a.displayIcon,portrait:a.bustPortrait||a.displayIcon};});
 
+  // Fetch all map images once
+  let mapImages={};
+  try{
+    const r=await fetch('https://valorant-api.com/v1/maps?language=fr-FR');
+    const j=await r.json();
+    (j.data||[]).forEach(m=>{mapImages[m.displayName.toLowerCase()]=m.splash||m.listViewIcon||'';});
+  }catch(e){}
+
   const grid=document.getElementById('mapsGrid');
   grid.innerHTML='';
 
   for(const map of MAP_DATA){
-    let mapImg='';
-    try{
-      const r=await fetch(`https://valorant-api.com/v1/maps?language=fr-FR`);
-      const j=await r.json();
-      const found=(j.data||[]).find(m=>m.displayName===map.name||m.displayName.toLowerCase()===map.name.toLowerCase());
-      if(found)mapImg=found.splash||found.listViewIcon||'';
-    }catch(e){}
-
+    const mapImg=mapImages[map.name.toLowerCase()]||'';
     const card=document.createElement('div');
     card.className='map-card';
 
-    const tiersH=Object.entries(map.tiers).map(([tier,agents])=>{
-      const pillsH=agents.map(ag=>{
+    const composH=map.compos.map((comp,ci)=>{
+      const pillsH=comp.agents.map(ag=>{
         const key=ag.n.toLowerCase();
-        const iconData=agentIconCache[key];
-        const iconUrl=iconData?.icon||'';
+        const iconUrl=agentIconCache[key]?.icon||'';
         const tagClass=ROLE_TAG_CLASS[ag.r]||'tag-init';
         return `<div class="agent-pill">
           <div class="agent-pill-ico-wrap">
-            ${iconUrl?`<img class="agent-pill-icon" src="${iconUrl}" alt="${ag.n}" onerror="this.style.display='none'">` :''}
+            ${iconUrl?`<img class="agent-pill-icon" src="${iconUrl}" alt="${ag.n}" onerror="this.style.display='none'">`:'' }
           </div>
           <div>
             <div class="agent-pill-name">${ag.n}</div>
@@ -578,9 +846,17 @@ async function buildTierList(){
           </div>
         </div>`;
       }).join('');
-      return `<div class="tier-row tier-${tier}">
-        <div class="tier-label">${tier}</div>
-        <div class="tier-agents">${pillsH}</div>
+
+      const stratsH=comp.strats.map(s=>`<div class="strat-item">${s}</div>`).join('');
+
+      return `<div class="comp-block">
+        <div class="comp-header">
+          <span class="comp-num">COMPO ${ci+1}</span>
+          <span class="comp-label">${comp.label}</span>
+          <span class="comp-badge">${comp.badge}</span>
+        </div>
+        <div class="comp-agents">${pillsH}</div>
+        <div class="comp-strats">${stratsH}</div>
       </div>`;
     }).join('');
 
@@ -592,42 +868,31 @@ async function buildTierList(){
           <div class="map-banner-name">${map.name}</div>
           <div class="map-banner-sites">${map.sites}</div>
         </div>
-        <div class="map-banner-tag">V26 · ACT 2</div>
+        <div class="map-banner-tag">PATCH 12.05</div>
       </div>
-      <div class="tier-section">${tiersH}</div>
-      <div class="map-tip">${map.tip}</div>`;
+      <div class="compos-section">${composH}</div>`;
     grid.appendChild(card);
   }
 }
+
+/* Lightbox */
+function openLightbox(img,name,color,rar,vp){
+  if(!img)return;
+  document.getElementById('lbImg').src=img;
+  document.getElementById('lbName').textContent=name;
+  const rb=document.getElementById('lbRarity');
+  rb.textContent=rar;rb.style.background=color+'22';rb.style.color=color;
+  document.getElementById('lbVp').textContent='◆ '+vp+' VP';
+  document.getElementById('lbOverlay').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeLightbox(e){if(e.target===document.getElementById('lbOverlay'))closeLightboxBtn();}
+function closeLightboxBtn(){document.getElementById('lbOverlay').classList.remove('open');document.body.style.overflow='';}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeLightboxBtn();});
 
 /* ─── INIT ─── */
 loadSkins();
 loadAgents();
 </script>
 </body>
-</html>"""
-
-PORT = 8000
-
-class Handler(http.server.BaseHTTPRequestHandler):
-    def do_GET(self):
-        self.send_response(200)
-        self.send_header("Content-type", "text/html; charset=utf-8")
-        self.end_headers()
-        self.wfile.write(HTML.encode("utf-8"))
-
-    def log_message(self, format, *args):
-        print(f"  {self.address_string()} → {args[0]}")
-
-def open_browser():
-    webbrowser.open(f"http://localhost:{PORT}")
-
-if __name__ == "__main__":
-    server = http.server.HTTPServer(("", PORT), Handler)
-    print(f"✅  Valorant Hub lancé sur http://localhost:{PORT}")
-    print("   Appuyez sur Ctrl+C pour arrêter.\n")
-    threading.Timer(0.8, open_browser).start()
-    try:
-        server.serve_forever()
-    except KeyboardInterrupt:
-        print("\n⛔  Serveur arrêté.")
+</html>
